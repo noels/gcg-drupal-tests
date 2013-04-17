@@ -1,0 +1,52 @@
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'idea'
+apply plugin: 'maven'
+
+
+buildscript {
+      apply from: 'https://github.com/samueltbrown/gradle-cucumber-plugin/raw/master/repo/gradle-cucumber-plugin/gradle-cucumber-plugin/0.2/cucumberinit.gradle'
+} 
+
+configurations {
+    cucumberRuntime {
+        extendsFrom testRuntime
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext.drivers = ["firefox", "chrome"]
+ext.siteUrl = "http://dgud7:10088/"
+
+dependencies {
+    def gebVersion = "0.9.0-RC-3"
+    def seleniumVersion = "2.30.0"
+    // Groovy library for groovy building!
+    groovy 'org.codehaus.groovy:groovy-all:2.0.0-beta-2'
+
+    cucumberRuntime files("${jar.archivePath}"),
+                    'info.cukes:cucumber-groovy:1.0.11'
+
+    testCompile "org.gebish:geb-junit4:$gebVersion"                    
+    testCompile 'junit:junit-dep:4.10'
+	testCompile 'info.cukes:cucumber-junit:1.0.9'
+    testCompile 'info.cukes:cucumber-groovy:1.0.9'
+    drivers.each { driver ->
+        testCompile "org.seleniumhq.selenium:selenium-$driver-driver:$seleniumVersion"
+    }
+}
+
+cucumber {
+    formats = ['pretty','json:build/cucumber.json','junit:build/cucumber.xml']
+    glueDirs = ['src/test/groovy',
+                'src/test/resources/env',
+                'src/test/resources/steps'
+                ]
+    featureDirs = ['src/test/resources/features']
+    monochrome = false
+    strict = false
+    dryRun = false
+}
