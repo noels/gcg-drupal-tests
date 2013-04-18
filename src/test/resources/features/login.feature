@@ -6,6 +6,6 @@ Feature: logon
   @important
   Scenario: Admin user
     Given I have entered admin into the user box
-    And I have entered pass into the password
+    And I have entered admin into the password
     When I press login
     Then I can see the admin menu
