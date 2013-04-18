@@ -5,8 +5,17 @@ apply plugin: 'maven'
 
 
 buildscript {
-      apply from: 'https://github.com/samueltbrown/gradle-cucumber-plugin/raw/master/repo/gradle-cucumber-plugin/gradle-cucumber-plugin/0.2/cucumberinit.gradle'
+      apply from: '../gradle-cucumber-plugin/repo/gradle-cucumber-plugin/gradle-cucumber-plugin/0.2/cucumberinit.gradle'
 } 
+
+def version = [
+        'groovy'    : '2.0.0-beta-2',
+        'junit'     : '4.10',
+        'geb'       : '0.7.2',
+        'selenium'  : '2.30.0',
+        'cucumber'  : '1.0.11'
+]
+
 
 configurations {
     cucumberRuntime {
@@ -18,35 +27,49 @@ repositories {
     mavenCentral()
 }
 
-ext.drivers = ["firefox", "chrome"]
-ext.siteUrl = "http://dgud7:10088/"
+def drivers = ["firefox", "chrome"]
 
 dependencies {
-    def gebVersion = "0.9.0-RC-3"
-    def seleniumVersion = "2.30.0"
     // Groovy library for groovy building!
-    groovy 'org.codehaus.groovy:groovy-all:2.0.0-beta-2'
+    groovy "org.codehaus.groovy:groovy-all:$version.groovy"
 
-    cucumberRuntime files("${jar.archivePath}"),
-                    'info.cukes:cucumber-groovy:1.0.11'
+    //Extend the cucumber runtime with dependencies which included the compiled test sources
+    cucumberRuntime "info.cukes:cucumber-groovy:$version.cucumber",
+            "org.codehaus.groovy:groovy-all:$version.groovy",
+            files("${jar.archivePath}"),
+            files(sourceSets.test.output)
 
-    testCompile "org.gebish:geb-junit4:$gebVersion"                    
-    testCompile 'junit:junit-dep:4.10'
-	testCompile 'info.cukes:cucumber-junit:1.0.9'
-    testCompile 'info.cukes:cucumber-groovy:1.0.9'
+    //Include some dependencies for the tests (junit, geb, cucumber and cucumber-junit)
+    testCompile "junit:junit:$version.junit"
+    testCompile "org.codehaus.geb:geb-junit4:$version.geb"
+    testCompile "info.cukes:cucumber-groovy:$version.cucumber"
+    testCompile "info.cukes:cucumber-junit:$version.cucumber"
+
+    //Include a dependency for each web driver we are using.
     drivers.each { driver ->
-        testCompile "org.seleniumhq.selenium:selenium-$driver-driver:$seleniumVersion"
+        testCompile "org.seleniumhq.selenium:selenium-$driver-driver:$version.selenium"
     }
 }
 
+//This configures the external cucumber gradle plugin but it seems not to work.
 cucumber {
     formats = ['pretty','json:build/cucumber.json','junit:build/cucumber.xml']
-    glueDirs = ['src/test/groovy',
-                'src/test/resources/env',
-                'src/test/resources/steps'
-                ]
+    glueDirs = ['src/test/groovy' ]
     featureDirs = ['src/test/resources/features']
     monochrome = false
     strict = false
     dryRun = false
+}
+
+//define our own javaexec task to run cucumber tests, using the cucumberRuntime.
+task cuke(){
+    dependsOn assemble, compileTestGroovy
+    doLast {
+        javaexec {
+            main = "cucumber.cli.Main"
+            classpath = configurations.cucumberRuntime
+            args = ['-f', 'pretty', '--glue', 'src/test/groovy', 'src/test/resources/features']
+
+        }
+    }
 }
