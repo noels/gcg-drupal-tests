@@ -5,7 +5,7 @@ apply plugin: 'maven'
 
 
 buildscript {
-      apply from: '../gradle-cucumber-plugin/repo/gradle-cucumber-plugin/gradle-cucumber-plugin/0.2/cucumberinit.gradle'
+    apply from: 'https://github.com/samueltbrown/gradle-cucumber-plugin/raw/master/repo/gradle-cucumber-plugin/gradle-cucumber-plugin/0.2/cucumberinit.gradle'
 } 
 
 def version = [
