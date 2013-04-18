@@ -11,7 +11,7 @@ buildscript {
 def version = [
         'groovy'    : '2.0.0-beta-2',
         'junit'     : '4.10',
-        'geb'       : '0.7.2',
+        'geb'       : '0.7.2',  //geb-junit4 is only at 0.7.2 so we can't move to 0.9.0
         'selenium'  : '2.30.0',
         'cucumber'  : '1.0.11'
 ]
@@ -37,7 +37,9 @@ dependencies {
     cucumberRuntime "info.cukes:cucumber-groovy:$version.cucumber",
             "org.codehaus.groovy:groovy-all:$version.groovy",
             files("${jar.archivePath}"),
-            files(sourceSets.test.output)
+            files(sourceSets.test.output),
+            files("src/test/resources")
+
 
     //Include some dependencies for the tests (junit, geb, cucumber and cucumber-junit)
     testCompile "junit:junit:$version.junit"
