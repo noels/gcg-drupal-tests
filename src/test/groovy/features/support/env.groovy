@@ -12,5 +12,6 @@ Before () {
 }
 
 After () {
+    bindingUpdater.browser.clearCookies()
     bindingUpdater.remove ()
 }
